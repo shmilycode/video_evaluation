@@ -4,6 +4,9 @@ from skimage.measure import compare_ssim
 from skimage.measure import compare_psnr
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import argparse
+
+threshold = 400
  
 class UpdateDist(object):
     def __init__(self, line, source_cap, target_cap, type):
@@ -13,7 +16,7 @@ class UpdateDist(object):
         self.target_cap=cv2.VideoCapture(target_cap)
         self.line=line
         self.type=type
-        self.threshold=400
+        self.threshold=threshold
 
     def __del__(self):
         self.source_cap.release()
@@ -51,8 +54,15 @@ class UpdateDist(object):
         return
 
 if __name__ == "__main__":
+    parse = argparse.ArgumentParser(description = 'manual to this script')
+    parse.add_argument('--validation_source', type=str, default=None, help="validation source")
+    parse.add_argument('--test_target', type=str, default=None, help="test source")
+    parse.add_argument('--threshold', type=int, default=None, help="max frame")
+    argv = parse.parse_args()
+
     fig = plt.figure()
     ax1 = fig.add_subplot(221)
+    ax1.set_title("ssim")
     line1, = ax1.plot([],[],'r-')
     ax1.set_xlim(0,400)
     ax1.set_ylim(0,1)
@@ -62,12 +72,15 @@ if __name__ == "__main__":
     ax2 = fig.add_subplot(222)
     line2, = ax2.plot([],[],'r-')
     ax2.set_xlim(0,400)
+    ax2.set_title("psnr")
     ax2.set_ylim(0,50)
     ax2.grid(True)
     ax2.axvline(0.5, linestyle='--',color='black')
     
-    source_cap = './test_video/dump.h264'
-    target_cap = './test_video/live.h264'
+    source_cap = argv.validation_source
+    target_cap = argv.test_target 
+    threshold = argv.threshold
+
 #    source_cap = './test_video/live.h264'
 #    target_cap = './test_video/live.h264'
     ud1 = UpdateDist(line1, source_cap, target_cap, "ssim")
